@@ -654,6 +654,1270 @@ def main():
         ["maximum direct reports", "Error"]  # Correctly enforces new capacity
     )
     
+    # ========== NAMES WITH SPACES TESTS (BUG DETECTION) ==========
+    
+    tester.run_test(
+        "BBT045",
+        "BUG: President name with spaces should be rejected",
+        ["John Smith", "ValidName", "DISPLAY", "EXIT"],
+        ["Error", "Invalid"]
+    )
+    
+    tester.run_test(
+        "BBT047",
+        "BUG: Multi-word names in HIRE command parsed incorrectly",
+        ["President1", "HIRE President1 Bob", "HIRE President1 Carol Davis", "DISPLAY", "EXIT"],
+        ["Vice President: Bob"]  # Carol Davis likely fails due to space
+    )
+    
+    tester.run_test(
+        "BBT048",
+        "BUG: Names with leading/trailing spaces",
+        ["President1", "HIRE President1  SpaceName ", "EXIT"],
+        ["Error", "Invalid"]
+    )
+    
+    # ========== HIERARCHY DISPLAY AFTER REMOVAL TESTS ==========
+    
+    tester.run_test(
+        "BBT053",
+        "Display hierarchy when VP is fired - subordinates should remain visible",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 Super1",
+         "HIRE VP1 Super2",
+         "HIRE Super1 Worker1",
+         "HIRE Super1 Worker2",
+         "FIRE President1 VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Vice President", "Supervisor: Super1", "Supervisor: Super2", 
+         "Worker: Worker1", "Worker: Worker2"],
+        should_contain_all=True
+    )
+    
+    tester.run_test(
+        "BBT054",
+        "Display hierarchy when VP quits - subordinates should remain visible",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 Super1",
+         "HIRE Super1 Worker1",
+         "QUIT VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Vice President", "Supervisor: Super1", "Worker: Worker1"],
+        should_contain_all=True
+    )
+    
+    tester.run_test(
+        "BBT055",
+        "Display hierarchy when Supervisor is fired - workers remain",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 Super1",
+         "HIRE Super1 W1",
+         "HIRE Super1 W2",
+         "HIRE Super1 W3",
+         "FIRE VP1 Super1",
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Supervisor", "Worker: W1", "Worker: W2", "Worker: W3"],
+        should_contain_all=True
+    )
+    
+    tester.run_test(
+        "BBT056",
+        "Display hierarchy when Supervisor quits - workers remain",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 Super1",
+         "HIRE Super1 W1",
+         "QUIT Super1",
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Supervisor", "Worker: W1"]
+    )
+    
+    tester.run_test(
+        "BBT057",
+        "Display after layoff of VP - subordinates remain visible",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 Super1",
+         "HIRE Super1 W1",
+         "LAYOFF President1 VP1",  # VP1 laid off, no opening so removed
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: Super1", "Worker: W1"]  # Should still see subordinates
+    )
+    
+    tester.run_test(
+        "BBT058",
+        "Deep hierarchy remains visible after mid-level removal",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "HIRE S2 W3",
+         "FIRE President1 VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Vice President", "Supervisor: S1", "Supervisor: S2", 
+         "Worker: W1", "Worker: W2", "Worker: W3"],
+        should_contain_all=True
+    )
+    
+    # ========== COMPREHENSIVE OPERATION COVERAGE ==========
+    
+    tester.run_test(
+        "BBT059",
+        "All operations in sequence - comprehensive workflow",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE VP2 S3",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "QUIT W1",
+         "FIRE VP1 S2",
+         "TRANSFER President1 W2 S3",
+         "PROMOTE VP2 S1",
+         "LAYOFF President1 S3",
+         "DISPLAY",
+         "EXIT"],
+        ["President: President1"]  # Basic sanity check
+    )
+    
+    tester.run_test(
+        "BBT060",
+        "Hire fills vacancy created by quit",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "QUIT S1",
+         "HIRE VP1 S2",
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: S2", "Successfully placed"]
+    )
+    
+    tester.run_test(
+        "BBT061",
+        "Promote after fire creates proper hierarchy",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "FIRE President1 VP1",
+         "HIRE President1 VP2",
+         "PROMOTE VP2 W1",
+         "DISPLAY",
+         "EXIT"],
+        ["Vice President: VP2", "Supervisor: W1"]
+    )
+    
+    tester.run_test(
+        "BBT062",
+        "Transfer to vacancy, then hire to another vacancy",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "FIRE VP1 S1",
+         "HIRE VP2 S2",
+         "TRANSFER President1 S2 VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: S2"]
+    )
+    
+    tester.run_test(
+        "BBT063",
+        "Layoff finds opening in same supervisor group",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "HIRE S1 W3",
+         "FIRE S1 W3",
+         "LAYOFF S1 W1",
+         "DISPLAY",
+         "EXIT"],
+        ["Worker: W1", "Worker: W2"]  # W1 should be moved to vacancy
+    )
+    
+    tester.run_test(
+        "BBT064",
+        "Layoff finds opening in different supervisor under same VP",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "HIRE S1 W3",
+         "HIRE S1 W4",
+         "HIRE S1 W5",  # S1 at capacity
+         "HIRE S2 W6",  # S2 has room
+         "LAYOFF S1 W1",
+         "DISPLAY",
+         "EXIT"],
+        ["Worker: W1"]  # W1 should move to S2
+    )
+    
+    tester.run_test(
+        "BBT065",
+        "Layoff finds opening in different VP group",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE VP2 S2",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "HIRE S1 W3",
+         "HIRE S1 W4",
+         "HIRE S1 W5",  # S1 full
+         "HIRE S2 W6",  # S2 has room
+         "LAYOFF S1 W1",
+         "DISPLAY",
+         "EXIT"],
+        ["Worker: W1"]  # Should move to S2 under VP2
+    )
+    
+    tester.run_test(
+        "BBT066",
+        "Multiple promotions changing hierarchy",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "HIRE S2 W2",
+         "FIRE President1 VP1",
+         "HIRE President1 VP2",
+         "PROMOTE VP2 S1",
+         "PROMOTE President1 W1",
+         "DISPLAY",
+         "EXIT"],
+        ["Vice President: VP2", "Vice President: S1"]
+    )
+    
+    tester.run_test(
+        "BBT067",
+        "Transfer across multiple VP branches",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE VP2 S2",
+         "HIRE VP2 S3",
+         "HIRE S1 W1",
+         "TRANSFER President1 W1 S3",
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: S3", "Worker: W1"]
+    )
+    
+    tester.run_test(
+        "BBT068",
+        "Fire then transfer into vacancy",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE VP2 S3",
+         "FIRE VP1 S1",
+         "TRANSFER President1 S3 VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: S3"]
+    )
+    
+    # ========== EDGE CASES FOR ALL OPERATIONS ==========
+    
+    tester.run_test(
+        "BBT069",
+        "Case sensitivity - names should be case sensitive",
+        ["President1",
+         "HIRE President1 alice",
+         "HIRE President1 Alice",
+         "DISPLAY",
+         "EXIT"],
+        ["alice", "Alice"]  # Both should exist if case sensitive
+    )
+    
+    tester.run_test(
+        "BBT070",
+        "Empty organization operations fail gracefully",
+        ["President1", "FIRE President1 Nobody", "QUIT Nobody", 
+         "LAYOFF President1 Nobody", "EXIT"],
+        ["does not exist"]
+    )
+    
+    tester.run_test(
+        "BBT071",
+        "Maximum capacity at all levels simultaneously",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE VP1 S3",
+         "HIRE VP2 S4",
+         "HIRE VP2 S5",
+         "HIRE VP2 S6",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "HIRE S1 W3",
+         "HIRE S1 W4",
+         "HIRE S1 W5",
+         "DISPLAY",
+         "EXIT"],
+        ["President: President1", "Vice President: VP1", "Vice President: VP2",
+         "Supervisor: S1", "Worker: W5"],
+        should_contain_all=True
+    )
+    
+    tester.run_test(
+        "BBT072",
+        "Promote employee with reports - vacancy created at old level",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "PROMOTE VP1 W1",
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: W1", "Worker: W2"]  # W2 should be under vacancy or W1
+    )
+    
+    tester.run_test(
+        "BBT073",
+        "Invalid command syntax variations",
+        ["President1",
+         "HIRE",
+         "FIRE President1",
+         "QUIT",
+         "LAYOFF President1",
+         "TRANSFER President1 VP1",
+         "PROMOTE President1",
+         "DISPLAY extra",
+         "EXIT"],
+        ["Incorrect", "argument"]
+    )
+    
+    tester.run_test(
+        "BBT074",
+        "Quit cascade - multiple levels quit from bottom up",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "QUIT W1",
+         "QUIT S1",
+         "QUIT VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["President: President1"]  # Only president remains
+    )
+    
+    tester.run_test(
+        "BBT075",
+        "Fire cascade - fire from top down creates vacancies",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "FIRE President1 VP1",
+         "FIRE President1 S1",
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Vice President", "VACANCY: Supervisor"]
+    )
+    
+    tester.run_test(
+        "BBT076",
+        "Layoff with no opening removes employee permanently",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "LAYOFF President1 VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["removed", "Vice President: VP2"]
+    )
+    
+    tester.run_test(
+        "BBT077",
+        "Transfer same person multiple times",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE VP2 S2",
+         "HIRE S1 W1",
+         "TRANSFER President1 W1 S2",
+         "TRANSFER President1 W1 S1",
+         "DISPLAY",
+         "EXIT"],
+        ["Worker: W1"]
+    )
+    
+    tester.run_test(
+        "BBT078",
+        "Promote multiple employees to same level",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "HIRE S1 W3",
+         "FIRE VP1 S1",
+         "PROMOTE VP1 W1",
+         "PROMOTE VP1 W2",
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: W1", "Supervisor: W2"]
+    )
+    
+    tester.run_test(
+        "BBT079",
+        "Complex state - all operations mixed",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "PROMOTE VP1 W1",
+         "HIRE W1 W3",
+         "QUIT W2",
+         "FIRE President1 VP1",
+         "HIRE President1 VP2",
+         "TRANSFER President1 S1 VP2",
+         "LAYOFF VP2 W3",
+         "DISPLAY",
+         "EXIT"],
+        ["President: President1"]
+    )
+    
+    tester.run_test(
+        "BBT080",
+        "Verify all vacancy types display correctly",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "FIRE President1 VP1",
+         "FIRE President1 S1",
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Vice President", "VACANCY: Supervisor", "Worker: W1"],
+        should_contain_all=True
+    )
+    
+    # ========== ADDITIONAL BUG DETECTION TESTS ==========
+    
+    tester.run_test(
+        "BBT081",
+        "BUG: Name with only spaces should be rejected",
+        ["   ", "ValidName", "DISPLAY", "EXIT"],
+        ["President: ValidName"]
+    )
+    
+    tester.run_test(
+        "BBT082",
+        "BUG: Name with tabs should be rejected",
+        ["Name\tWithTab", "ValidName", "EXIT"],
+        ["Error", "Invalid"]
+    )
+    
+    tester.run_test(
+        "BBT083",
+        "BUG: Name with newlines should be rejected",
+        ["Name\nLine", "ValidName", "EXIT"],
+        ["President: ValidName"]
+    )
+    
+    tester.run_test(
+        "BBT085",
+        "BUG: Names with underscores",
+        ["President1", "HIRE President1 User_Name", "EXIT"],
+        ["Error", "Invalid"]
+    )
+    
+    tester.run_test(
+        "BBT086",
+        "BUG: Names with hyphens/dashes",
+        ["President1", "HIRE President1 Mary-Jane", "EXIT"],
+        ["Error", "Invalid"]
+    )
+    
+    tester.run_test(
+        "BBT087",
+        "BUG: Very long name (100+ characters)",
+        ["President1", 
+         "HIRE President1 " + "A" * 100,
+         "EXIT"],
+        ["Successfully"]  # Should handle or reject gracefully
+    )
+    
+    tester.run_test(
+        "BBT088",
+        "BUG: Single character name",
+        ["President1", "HIRE President1 X", "DISPLAY", "EXIT"],
+        ["Vice President: X"]  # Single char may or may not be valid
+    )
+    
+    tester.run_test(
+        "BBT089",
+        "BUG: Name that is a command word (EXIT, HIRE, etc)",
+        ["President1", "HIRE President1 EXIT", "DISPLAY", "EXIT"],
+        ["Vice President: EXIT"]  # Should allow or reject consistently
+    )
+    
+    tester.run_test(
+        "BBT090",
+        "BUG: Fire subordinate directly without going through manager",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "FIRE S1 W1",  # S1 firing their own worker - should work
+         "DISPLAY",
+         "EXIT"],
+        ["removed"]
+    )
+    
+    tester.run_test(
+        "BBT091",
+        "BUG: Subordinates lost after multiple cascading fires",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "HIRE S2 W2",
+         "FIRE President1 VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["Worker: W1", "Worker: W2"],  # Both workers should be visible
+        should_contain_all=True
+    )
+    
+    tester.run_test(
+        "BBT092",
+        "BUG: Quit then immediately hire same name",
+        ["President1",
+         "HIRE President1 VP1",
+         "QUIT VP1",
+         "HIRE President1 VP1",  # Reuse same name
+         "DISPLAY",
+         "EXIT"],
+        ["Vice President: VP1"]
+    )
+    
+    tester.run_test(
+        "BBT093",
+        "BUG: Fire then immediately hire same name",
+        ["President1",
+         "HIRE President1 VP1",
+         "FIRE President1 VP1",
+         "HIRE President1 VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["Vice President: VP1"]
+    )
+    
+    tester.run_test(
+        "BBT094",
+        "BUG: Layoff then hire same name at different position",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "LAYOFF President1 VP1",
+         "HIRE VP2 VP1",  # VP1 now as supervisor
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: VP1"]
+    )
+    
+    tester.run_test(
+        "BBT095",
+        "BUG: Transfer employee to themselves as manager",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "TRANSFER President1 S1 S1",  # S1 reporting to S1 - invalid
+         "EXIT"],
+        ["Error"]
+    )
+    
+    tester.run_test(
+        "BBT096",
+        "BUG: Promote employee to report to themselves",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "PROMOTE S1 W1",  # W1 becomes supervisor under S1 who was their boss
+         "EXIT"],
+        ["cannot promote", "Error"]
+    )
+    
+    tester.run_test(
+        "BBT097",
+        "BUG: Circular reporting - transfer creates loop",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "PROMOTE VP1 W1",  # W1 becomes supervisor
+         "TRANSFER President1 S1 W1",  # S1 now reports to W1 (was W1's boss)
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: S1", "Supervisor: W1"]
+    )
+    
+    tester.run_test(
+        "BBT098",
+        "BUG: Promote creates more VPs than allowed",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "PROMOTE President1 S1",  # 3rd VP - exceeds capacity
+         "DISPLAY",
+         "EXIT"],
+        ["Error", "maximum"]
+    )
+    
+    tester.run_test(
+        "BBT099",
+        "BUG: Layoff employee who has subordinates - subordinates lost",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "LAYOFF President1 VP1",  # VP1 has subordinates
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: S1", "Worker: W1", "Worker: W2"],
+        should_contain_all=True
+    )
+    
+    tester.run_test(
+        "BBT100",
+        "BUG: Transfer to non-existent manager",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "TRANSFER President1 S1 GhostManager",
+         "EXIT"],
+        ["does not exist", "Error"]
+    )
+    
+    tester.run_test(
+        "BBT101",
+        "BUG: Promote non-existent employee",
+        ["President1",
+         "HIRE President1 VP1",
+         "PROMOTE VP1 GhostEmployee",
+         "EXIT"],
+        ["does not exist", "Error"]
+    )
+    
+    tester.run_test(
+        "BBT102",
+        "BUG: Multiple spaces between command arguments",
+        ["President1",
+         "HIRE  President1  VP1",  # Extra spaces
+         "DISPLAY",
+         "EXIT"],
+        ["Vice President: VP1"]  # Should handle or reject
+    )
+    
+    tester.run_test(
+        "BBT103",
+        "BUG: Empty command (just pressing enter)",
+        ["President1", "", "", "DISPLAY", "EXIT"],
+        ["President: President1"]  # Should handle gracefully
+    )
+    
+    tester.run_test(
+        "BBT105",
+        "BUG: Promote worker creates vacancy but workers still under old supervisor",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "FIRE VP1 S1",
+         "PROMOTE VP1 W1",  # W1 promoted to supervisor
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: W1", "Worker: W2"]  # W2 should be visible somewhere
+    )
+    
+    tester.run_test(
+        "BBT107",
+        "BUG: Nested vacancies display incorrectly",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "QUIT S1",
+         "QUIT VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Vice President", "Worker: W1"]  # W1 should still be visible
+    )
+    
+    tester.run_test(
+        "BBT108",
+        "BUG: Fire creates vacancy, then fill with promote, subordinates preserved",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "FIRE VP1 S1",  # S1 fired, W1 and W2 under vacancy
+         "HIRE VP1 S2",
+         "HIRE S2 W3",
+         "PROMOTE VP1 W3",  # W3 promoted to fill supervisor vacancy
+         "DISPLAY",
+         "EXIT"],
+        ["Worker: W1", "Worker: W2", "Supervisor: W3"]
+    )
+    
+    tester.run_test(
+        "BBT109",
+        "BUG: Layoff searches wrong hierarchy for openings",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE VP1 S3",  # VP1 at capacity
+         "HIRE VP2 S4",  # VP2 has room
+         "HIRE S1 W1",
+         "LAYOFF S1 W1",  # Should not move to VP2's supervisor
+         "DISPLAY",
+         "EXIT"],
+        ["Worker: W1"]
+    )
+    
+    tester.run_test(
+        "BBT110",
+        "BUG: Worker capacity enforcement - workers should not have subordinates",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "HIRE W1 Someone",  # Worker cannot hire
+         "EXIT"],
+        ["cannot hire", "Error"]
+    )
+    
+    tester.run_test(
+        "BBT111",
+        "BUG: President capacity exceeded by promotion",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",  # President at capacity (2 VPs)
+         "HIRE VP1 S1",
+         "FIRE President1 VP2",
+         "HIRE President1 VP3",
+         "PROMOTE President1 S1",  # Would create 3rd VP
+         "EXIT"],
+        ["maximum", "Error"]
+    )
+    
+    tester.run_test(
+        "BBT112",
+        "BUG: VP capacity exceeded by promotion",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE VP1 S3",  # VP at capacity (3 supervisors)
+         "HIRE S1 W1",
+         "PROMOTE VP1 W1",  # Would create 4th supervisor
+         "EXIT"],
+        ["maximum", "Error"]
+    )
+    
+    tester.run_test(
+        "BBT113",
+        "BUG: Supervisor capacity exceeded by promotion",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "HIRE S1 W3",
+         "HIRE S1 W4",
+         "HIRE S1 W5",  # S1 at capacity (5 workers)
+         "HIRE S2 W6",
+         "TRANSFER President1 W6 S1",  # Should fail - S1 full
+         "EXIT"],
+        ["maximum", "Error"]
+    )
+    
+    tester.run_test(
+        "BBT114",
+        "BUG: Quit removes name from system, can rehire immediately",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "QUIT S1",
+         "HIRE VP1 S1",  # Same name reused
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: S1"]
+    )
+    
+    tester.run_test(
+        "BBT115",
+        "BUG: Fire removes from lookup, subordinates become inaccessible",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "FIRE President1 VP1",
+         "FIRE President1 S1",  # Can still fire S1 even though VP1 is vacancy?
+         "EXIT"],
+        ["removed", "does not exist"]  # May succeed or fail depending on implementation
+    )
+    
+    tester.run_test(
+        "BBT116",
+        "BUG: Display stops at first vacancy instead of showing deeper levels",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "HIRE S2 W2",
+         "FIRE President1 VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: S1", "Supervisor: S2", "Worker: W1", "Worker: W2"],
+        should_contain_all=True
+    )
+    
+    tester.run_test(
+        "BBT117",
+        "BUG: Transfer employee who has subordinates",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "TRANSFER President1 S1 VP2",  # S1 has subordinate W1
+         "DISPLAY",
+         "EXIT"],
+        ["Vice President: VP2", "Supervisor: S1", "Worker: W1"]
+    )
+    
+    tester.run_test(
+        "BBT118",
+        "BUG: Promote employee who has subordinates - subordinates transfer",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "FIRE President1 VP1",
+         "HIRE President1 VP2",
+         "PROMOTE VP2 S1",  # S1 has workers W1, W2
+         "DISPLAY",
+         "EXIT"],
+        ["Vice President: S1", "Worker: W1", "Worker: W2"]
+    )
+    
+    tester.run_test(
+        "BBT119",
+        "BUG: Extremely deep hierarchy (5+ levels with vacancy)",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "QUIT VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Vice President", "Supervisor: S1", "Worker: W1"],
+        should_contain_all=True
+    )
+    
+    tester.run_test(
+        "BBT120",
+        "BUG: All employees at one level quit/fired, vacancies remain",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "FIRE President1 VP1",
+         "FIRE President1 VP2",
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Vice President"]  # Should show 2 vacancies or handle cleanup
+    )
+    
+    tester.run_test(
+        "BBT122",
+        "BUG: Layoff to opening transfers with subordinates intact",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "FIRE VP1 S1",  # Create supervisor vacancy
+         "HIRE VP2 S2",
+         "HIRE S2 W3",
+         "LAYOFF VP2 S2",  # Should move to vacancy under VP1
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: S2", "Worker: W3"]
+    )
+    
+    tester.run_test(
+        "BBT126",
+        "BUG: Worker under vacancy still accessible for operations",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "FIRE VP1 S1",  # S1 fired, W1 under vacancy
+         "QUIT W1",  # Can W1 quit?
+         "DISPLAY",
+         "EXIT"],
+        ["removed"]
+    )
+    
+    tester.run_test(
+        "BBT127",
+        "BUG: Promote from under vacancy",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "FIRE VP1 S1",  # W1 now under vacancy
+         "PROMOTE VP1 W1",  # Promote W1 from under vacancy
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: W1"]
+    )
+    
+    tester.run_test(
+        "BBT128",
+        "BUG: Transfer from under vacancy",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "FIRE VP1 S1",  # W1 under vacancy
+         "TRANSFER VP1 W1 S2",
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: S2", "Worker: W1"]
+    )
+    
+    tester.run_test(
+        "BBT129",
+        "BUG: Fire employee under vacancy",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "FIRE VP1 S1",  # S1 fired, W1 under vacancy
+         "FIRE VP1 W1",  # Can fire W1 through VP1?
+         "DISPLAY",
+         "EXIT"],
+        ["removed"]
+    )
+    
+    tester.run_test(
+        "BBT130",
+        "BUG: Layoff employee under vacancy",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "FIRE VP1 S1",  # W1 under vacancy
+         "LAYOFF VP1 W1",
+         "DISPLAY",
+         "EXIT"],
+        ["Worker: W1"]  # Should move or be removed
+    )
+    
+    tester.run_test(
+        "BBT131",
+        "BUG: Fill vacancy preserves grandchildren",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "FIRE President1 VP1",  # VP1 fired, S1 and workers under vacancy
+         "HIRE President1 VP2",  # New VP
+         "DISPLAY",
+         "EXIT"],
+        ["Vice President: VP2", "Supervisor: S1", "Worker: W1", "Worker: W2"]
+    )
+    
+    tester.run_test(
+        "BBT132",
+        "BUG: Multiple vacancies at same level",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE VP1 S3",
+         "FIRE VP1 S1",
+         "FIRE VP1 S2",
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Supervisor"]  # Should show vacancies
+    )
+    
+    tester.run_test(
+        "BBT133",
+        "BUG: Name is SQL injection attempt",
+        ["President1",
+         "HIRE President1 Robert';DROP TABLE users;--",
+         "EXIT"],
+        ["Error", "Invalid"]
+    )
+    
+    tester.run_test(
+        "BBT134",
+        "BUG: Name with escape sequences",
+        ["President1",
+         "HIRE President1 Name\\nWithEscape",
+         "EXIT"],
+        ["Error", "Invalid"]
+    )
+    
+    tester.run_test(
+        "BBT135",
+        "BUG: Promote to fill specific vacancy among multiple",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "HIRE S2 W2",
+         "FIRE VP1 S1",
+         "FIRE VP1 S2",  # 2 supervisor vacancies
+         "PROMOTE VP1 W1",
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: W1"]
+    )
+    
+    tester.run_test(
+        "BBT137",
+        "BUG: President tries to transfer themselves",
+        ["President1",
+         "HIRE President1 VP1",
+         "TRANSFER President1 President1 VP1",
+         "EXIT"],
+        ["Error"]
+    )
+    
+    tester.run_test(
+        "BBT139",
+        "BUG: Attempt to promote president",
+        ["President1",
+         "PROMOTE President1 President1",
+         "EXIT"],
+        ["cannot be promoted further", "Error"]
+    )
+    
+    tester.run_test(
+        "BBT140",
+        "BUG: Negative test - hire under fired employee",
+        ["President1",
+         "HIRE President1 VP1",
+         "FIRE President1 VP1",
+         "HIRE VP1 Someone",  # VP1 doesn't exist anymore
+         "EXIT"],
+        ["does not exist", "Error"]
+    )
+    
+    tester.run_test(
+        "BBT141",
+        "BUG: Operations on president use wrong name",
+        ["President1",
+         "FIRE WrongName VP1",
+         "EXIT"],
+        ["does not exist", "Error"]
+    )
+    
+    tester.run_test(
+        "BBT142",
+        "BUG: Display with only vacancies (all employees quit)",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "QUIT S1",
+         "QUIT VP1",
+         "DISPLAY",
+         "EXIT"],
+        ["President: President1"]  # May or may not show vacancies
+    )
+    
+    tester.run_test(
+        "BBT143",
+        "BUG: Rehire into specific vacancy position",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "FIRE VP1 S1",  # Create supervisor vacancy under VP1
+         "HIRE VP1 S2",  # Should fill the vacancy
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: S2"]
+    )
+    
+    tester.run_test(
+        "BBT144",
+        "BUG: Worker promoted multiple times in succession",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "FIRE VP1 S1",  # Create supervisor vacancy
+         "PROMOTE VP1 W1",  # W1 -> Supervisor
+         "FIRE President1 VP1",  # Create VP vacancy
+         "HIRE President1 VP2",
+         "PROMOTE President1 W1",  # W1 (now supervisor) -> VP
+         "DISPLAY",
+         "EXIT"],
+        ["Vice President: W1"]
+    )
+    
+    tester.run_test(
+        "BBT145",
+        "BUG: Layoff priority - same supervisor first",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "HIRE S1 W3",
+         "HIRE S1 W4",
+         "HIRE S1 W5",  # S1 full
+         "HIRE S2 W6",  # S2 has room
+         "FIRE S1 W5",  # Create opening at S1
+         "LAYOFF S1 W1",  # Should move to S1's vacancy first, not S2
+         "DISPLAY",
+         "EXIT"],
+        ["Supervisor: S1"]  # W1 should still be under S1
+    )
+    
+    tester.run_test(
+        "BBT146",
+        "BUG: Complex hierarchy with multiple vacancy levels",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "QUIT S1",  # S1 quits, creates supervisor vacancy
+         "QUIT VP1",  # VP1 quits, creates VP vacancy
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Vice President", "Worker: W1", "Worker: W2"]
+    )
+    
+    tester.run_test(
+        "BBT147",
+        "BUG: Hire after quit preserves subordinate structure",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE VP1 S1",
+         "HIRE S1 W1",
+         "QUIT VP1",  # VP1 quits, S1 and W1 under vacancy
+         "HIRE President1 VP2",  # Fill vacancy
+         "DISPLAY",
+         "EXIT"],
+        ["Vice President: VP2", "Supervisor: S1", "Worker: W1"],
+        should_contain_all=True
+    )
+    
+    tester.run_test(
+        "BBT148",
+        "BUG: Name with all capital letters",
+        ["PRESIDENT",
+         "HIRE PRESIDENT VICEPRESIDENT",
+         "DISPLAY",
+         "EXIT"],
+        ["President: PRESIDENT", "Vice President: VICEPRESIDENT"]
+    )
+    
+    tester.run_test(
+        "BBT149",
+        "BUG: Name with all lowercase letters",
+        ["president",
+         "HIRE president vicepresident",
+         "DISPLAY",
+         "EXIT"],
+        ["President: president", "Vice President: vicepresident"]
+    )
+    
+    tester.run_test(
+        "BBT150",
+        "BUG: Maximum nesting - full organization at all capacities",
+        ["President1",
+         "HIRE President1 VP1",
+         "HIRE President1 VP2",
+         "HIRE VP1 S1",
+         "HIRE VP1 S2",
+         "HIRE VP1 S3",
+         "HIRE VP2 S4",
+         "HIRE VP2 S5",
+         "HIRE VP2 S6",
+         "HIRE S1 W1",
+         "HIRE S1 W2",
+         "HIRE S1 W3",
+         "HIRE S1 W4",
+         "HIRE S1 W5",
+         "HIRE S2 W6",
+         "HIRE S2 W7",
+         "HIRE S2 W8",
+         "HIRE S2 W9",
+         "HIRE S2 W10",
+         "QUIT VP1",  # Remove VP1 with full subtree
+         "DISPLAY",
+         "EXIT"],
+        ["VACANCY: Vice President", "Supervisor: S1", "Supervisor: S2", "Supervisor: S3",
+         "Worker: W1", "Worker: W10"],
+        should_contain_all=True
+    )
+
     # Print summary
     tester.print_summary()
     
