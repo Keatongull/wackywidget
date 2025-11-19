@@ -255,5 +255,263 @@
   - Verify initial state before each test
   - Document state dependencies
 
+---
+
+## 6. AUTOMATED TESTING IMPLEMENTATION (20 points)
+
+### 6.1 Overview
+An automated black-box test suite has been developed to systematically verify the Wacky Widget Organization Management System against its requirements. The test automation framework provides:
+
+- **Complete black-box testing** - No dependency on implementation code
+- **Subprocess-based execution** - Interacts with `main.py` via command-line interface only
+- **Comprehensive coverage** - 150 automated test cases covering all functional areas
+- **Bug detection focus** - Specific tests designed to uncover common edge cases and defects
+
+### 6.2 Test Automation Architecture
+
+#### 6.2.1 Framework Design
+The automated testing framework (`run_blackbox_tests.py`) implements:
+
+- **BlackBoxTester Class:** Main test harness that manages test execution
+  - Runs `main.py` as a subprocess
+  - Sends commands via stdin
+  - Captures output from stdout/stderr
+  - Validates expected outputs against actual results
+  - Tracks pass/fail statistics
+
+- **Test Isolation:** Each test case runs the application independently
+  - Fresh instance per test prevents state contamination
+  - 5-second timeout prevents hanging
+  - Exception handling for robustness
+
+#### 6.2.2 Test Case Structure
+Each test case includes:
+- **Test ID:** Unique identifier (BBT001-BBT150)
+- **Description:** Clear statement of what is being tested
+- **Input Commands:** List of commands to send to the application
+- **Expected Outputs:** Strings that should appear in the output
+- **Validation Mode:** 
+  - `should_contain_all=False` (default): At least one expected output must be present
+  - `should_contain_all=True`: All expected outputs must be present
+
+### 6.3 Test Coverage Areas
+
+#### Category A: Initialization & Setup (BBT001-BBT003C) - 6 tests
+- Valid president name initialization
+- Name validation (spaces, empty, numeric, single character)
+- Invalid name reprompting behavior
+
+#### Category B: HIRE Operations (BBT004-BBT013B) - 13 tests
+- Hiring at all organizational levels
+- Capacity enforcement (President: 2, VP: 3, Supervisor: 5)
+- Worker hiring restrictions
+- Duplicate name detection
+- Invalid manager validation
+- Name format validation (numeric, special characters)
+
+#### Category C: FIRE Operations (BBT014-BBT018) - 5 tests
+- Firing employees with and without reports
+- Vacancy creation on fire
+- President protection (cannot be fired)
+- Hierarchy enforcement
+- Non-existent employee handling
+
+#### Category D: QUIT Operations (BBT019-BBT021E) - 8 tests
+- Voluntary departure functionality
+- President quit restriction
+- Subordinate preservation after quit
+- Case sensitivity in names
+- Display behavior after quit
+
+#### Category E: LAYOFF Operations (BBT022-BBT024A) - 4 tests
+- Layoff with no comparable openings
+- Placement in available positions
+- President layoff restriction
+- Subordinate handling during layoff
+
+#### Category F: TRANSFER Operations (BBT025-BBT028) - 4 tests
+- President and VP transfer authorization
+- Cross-hierarchy transfers
+- Supervisor transfer restrictions
+- Capacity validation
+
+#### Category G: PROMOTE Operations (BBT029-BBT034) - 6 tests
+- Single-level promotions (Worker→Supervisor, Supervisor→VP)
+- Multi-level promotion prevention
+- VP promotion limit
+- Vacancy requirement
+- Receiving manager eligibility
+
+#### Category H: DISPLAY Operations (BBT035-BBT037) - 3 tests
+- Complete hierarchy visualization
+- Supervisory vacancy display
+- Worker vacancy handling
+
+#### Category I: Edge Cases & Integration (BBT038-BBT068) - 31 tests
+- Vacancy filling scenarios
+- Complex multi-operation workflows
+- Case sensitivity verification
+- Maximum capacity scenarios
+- Promoted employee capacity changes
+- Transfer and promote combinations
+- Deep hierarchy operations
+
+#### Category J: Bug Detection Tests (BBT069-BBT150) - 82 tests
+Targeted tests for known defect patterns:
+- **Subordinate Visibility:** Tests for subordinates disappearing after manager removal
+- **Promotion Defects:** Unlimited promotions, invalid hierarchy creation, capacity bypass
+- **Name Validation:** Spaces, special characters, case sensitivity, SQL injection
+- **Hierarchy Integrity:** Circular reporting, nested VPs, vacancy propagation
+- **Operation Combinations:** Quit/fire/layoff then rehire, multiple cascading operations
+- **Vacancy Management:** Multiple vacancies, filling specific vacancies, operations under vacancies
+- **Capacity Enforcement:** Promotion exceeding limits, transfer to full positions
+- **Display Issues:** Vacancy display depth, nested vacancies, empty organization
+
+### 6.4 Execution and Reporting
+
+#### 6.4.1 Running the Test Suite
+```powershell
+python run_blackbox_tests.py
+```
+
+#### 6.4.2 Test Output Format
+For each test:
+```
+======================================================================
+Running BBT001: Initialize president with valid name
+======================================================================
+Input commands: ['Alice', 'DISPLAY', 'EXIT']
+
+Program output:
+[actual program output]
+
+[PASS] Expected: 'President: Alice' - FOUND
+
+[PASS] BBT001 PASSED
+```
+
+#### 6.4.3 Summary Report
+At completion:
+```
+======================================================================
+TEST EXECUTION SUMMARY
+======================================================================
+Total Tests: 150
+Passed: XX
+Failed: XX
+Pass Rate: XX.X%
+======================================================================
+
+FAILED TESTS:
+  - BBT0XX: Description of failed test
+  - ...
+```
+
+### 6.5 Defects Discovered Through Automation
+
+The automated test suite is designed to detect the following defect categories:
+
+1. **Subordinate Loss Defects (Critical)**
+   - Tests BBT021A-C, BBT024A, BBT053-58, BBT091, BBT099, BBT116, BBT119-122
+   - When manager is fired/quits/laid off, subordinates may disappear from display
+   - Subordinates remain in data structures but become invisible/inaccessible
+
+2. **Promotion System Defects (High)**
+   - Tests BBT041-43, BBT043A, BBT098, BBT111-112
+   - Unlimited promotions beyond VP
+   - Creation of invalid hierarchies (VP under VP)
+   - Capacity enforcement bypass through promotion
+
+3. **Name Validation Defects (Medium)**
+   - Tests BBT003A-C, BBT013A-B, BBT021D-E, BBT045, BBT047-48, BBT069, BBT081-89
+   - Numeric names accepted when should be rejected
+   - Names with spaces cause parsing errors
+   - Case sensitivity inconsistencies
+   - Special characters not properly validated
+
+4. **Vacancy Display Defects (Medium)**
+   - Tests BBT107, BBT120, BBT132, BBT142, BBT146
+   - Vacancies at multiple levels display incorrectly
+   - Deep hierarchy display stops at first vacancy
+   - Nested vacancies cause display truncation
+
+5. **Capacity Enforcement Defects (High)**
+   - Tests BBT006, BBT008, BBT010, BBT028, BBT033, BBT113
+   - Capacity limits may be bypassed through specific operation sequences
+   - Promotion can create positions exceeding capacity
+
+### 6.6 Test Data Strategy
+
+#### 6.6.1 Organization Sizes
+- **Minimal:** President only (initialization tests)
+- **Small:** 1-2 VPs with sparse reporting structure
+- **Medium:** Multiple VPs with several supervisors
+- **Full:** All positions at maximum capacity
+- **Deep:** Maximum nesting depth with vacancies
+
+#### 6.6.2 Name Variations
+- Valid alphabetic names (Alice, Bob, President1)
+- Single character (X)
+- All capitals (PRESIDENT)
+- All lowercase (president)
+- Mixed case (AlIcE)
+- Numeric (123, 999)
+- Special characters (@, #, -, _)
+- Spaces (John Smith, leading/trailing spaces)
+- Very long names (100+ characters)
+- Command words (EXIT, HIRE)
+- Escape sequences (\n, \t)
+- SQL injection attempts
+
+### 6.7 Continuous Testing Integration
+
+#### 6.7.1 Test Suite Maintenance
+- Add new test cases when bugs are discovered
+- Update expected outputs if requirements change
+- Group related tests for targeted execution
+- Maintain test ID documentation
+
+#### 6.7.2 Regression Testing
+- Run full suite after any code changes
+- Focus on previously failed test areas
+- Verify bug fixes don't introduce new defects
+- Track historical pass rates
+
+### 6.8 Limitations and Future Enhancements
+
+#### Current Limitations
+- No performance/load testing
+- Limited concurrency testing
+- Output validation is string-based (may miss formatting issues)
+- Timeout set to 5 seconds (may be too short for complex operations)
+
+#### Potential Enhancements
+- Parameterized test generation for combinatorial coverage
+- Output parsing for structured validation
+- Code coverage measurement integration
+- Automated defect report generation
+- Integration with CI/CD pipeline
+- Property-based testing for random operation sequences
+- Visual hierarchy validation (indentation checking)
+
+### 6.9 Benefits of Automation
+
+1. **Repeatability:** Same tests execute consistently
+2. **Speed:** 150 tests run in minutes vs. hours manually
+3. **Coverage:** Comprehensive edge case testing impossible manually
+4. **Regression Detection:** Quickly identify when fixes break other functionality
+5. **Documentation:** Test cases serve as executable specifications
+6. **Bug Discovery:** Systematic exploration finds defects missed in manual testing
+7. **Confidence:** High test count provides statistical confidence in quality
+
+### 6.10 Integration with Manual Testing
+
+The automated test suite complements manual testing by:
+- **Smoke Testing:** Quick verification before manual test sessions
+- **Regression Testing:** Automated checks while testers focus on exploratory testing
+- **Bug Reproduction:** Convert manually found bugs into automated tests
+- **Coverage Gaps:** Automated tests handle tedious repetitive scenarios
+- **Documentation:** Test cases provide examples for manual test design
+
 
 
