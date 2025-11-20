@@ -2,8 +2,8 @@
 
 **Project:** Wacky Widget Organization Management System  
 **Testing Team:** Team 2  
-**Date:** November 13, 2025  
-**Version:** 1.0
+**Date:** November 20, 2025  
+**Version:** 1.1
 
 ---
 
@@ -55,56 +55,90 @@
 
 ### 2.3 Test Categories
 
-#### Category A: Initialization & Setup
-- President initialization
-- Name validation rules
+The test suite covers 150 automated test cases organized into the following categories:
+
+#### Category A: Initialization & Setup (6 tests)
+- President initialization with valid/invalid names
+- Name validation rules (spaces, empty, numeric, special characters)
 - Empty organization state
+- Invalid name reprompting behavior
 
-#### Category B: Hierarchy Operations
-- **HIRE:** Direct hiring under managers at all levels
-- **FIRE:** Removal with vacancy creation
-- **QUIT:** Self-initiated departure
-- **LAYOFF:** Removal with relocation attempt
-- **TRANSFER:** Lateral moves within hierarchy
-- **PROMOTE:** Upward movement one level
+#### Category B: HIRE Operations (13 tests)
+- Direct hiring under managers at all levels
+- Capacity enforcement (President: 2, VP: 3, Supervisor: 5)
+- Worker hiring restrictions
+- Duplicate name detection and validation
+- Invalid manager validation
 
-#### Category C: Capacity Management
-- Maximum direct reports per role (President: 2, VP: 3, Supervisor: 5)
-- Vacancy filling
-- Capacity validation during operations
+#### Category C: FIRE Operations (5 tests)
+- Removal with vacancy creation
+- Firing employees with and without reports
+- President protection (cannot be fired)
+- Hierarchy enforcement
+- Non-existent employee handling
 
-#### Category D: Authorization & Hierarchy Rules
-- Firing within hierarchy only
+#### Category D: QUIT Operations (8 tests)
+- Self-initiated departure
+- President quit restriction
+- Subordinate preservation after quit
+- Case sensitivity in names
+
+#### Category E: LAYOFF Operations (4 tests)
+- Removal with relocation attempt
+- Placement in available positions
+- President layoff restriction
+- Subordinate handling during layoff
+
+#### Category F: TRANSFER Operations (4 tests)
+- Lateral moves within hierarchy
 - Transfer authorization (VP/President only)
-- Promotion receiving manager eligibility
-- Peer supervision prevention
+- Cross-hierarchy transfers
+- Capacity validation
 
-#### Category E: Vacancy Handling
-- Vacancy creation on departure
-- Vacancy filling on hire
-- Reporting to vacant positions
-- Display of vacancies (supervisory only)
+#### Category G: PROMOTE Operations (6 tests)
+- Upward movement one level (Worker→Supervisor, Supervisor→VP)
+- Multi-level promotion prevention
+- VP promotion limit
+- Vacancy requirement
+- Receiving manager eligibility
 
-#### Category F: Display & Output
-- Organization chart formatting
-- Vacancy display rules
+#### Category H: DISPLAY Operations (3 tests)
+- Organization chart formatting and visualization
+- Vacancy display rules (supervisory only)
 - Empty organization handling
 - Indentation and hierarchy visualization
 
-#### Category G: Edge Cases & Error Handling
-- Duplicate names
-- Non-existent employees
-- Invalid command syntax
-- Workers attempting to hire
-- President special cases (cannot quit/fire)
-- Multi-level promotion attempts
+#### Category I: Edge Cases & Integration (31 tests)
+- Vacancy filling scenarios
+- Complex multi-operation workflows
+- Maximum capacity scenarios
+- Promoted employee capacity changes
+- Transfer and promote combinations
+- Deep hierarchy operations
+
+#### Category J: Bug Detection Tests (70 tests)
+- Subordinate visibility after manager removal
+- Promotion system defects and hierarchy violations
+- Name validation edge cases
+- Vacancy management and display issues
+- Capacity enforcement bypass scenarios
+- Operation combinations and state transitions
 
 ### 2.4 Test Data Strategy
-- **Minimal Organization:** President only
-- **Small Organization:** President + 1-2 VPs + few supervisors
-- **Full Organization:** All positions filled to capacity
-- **Sparse Organization:** Many vacancies
-- **Edge Names:** Empty strings, spaces, special characters, very long names
+
+#### Organization Sizes
+- **Minimal:** President only (initialization tests)
+- **Small:** 1-2 VPs with sparse reporting structure
+- **Medium:** Multiple VPs with several supervisors
+- **Full:** All positions at maximum capacity
+- **Deep:** Maximum nesting depth with vacancies
+
+#### Name Variations
+- Valid alphabetic names (Alice, Bob, President1)
+- Single character and very long names (100+ characters)
+- Case variations (PRESIDENT, president, AlIcE)
+- Invalid formats (numeric, spaces, special characters, escape sequences)
+- Edge cases (empty, command words, SQL injection attempts)
 
 ### 2.5 Pass/Fail Criteria
 - **Pass:** Expected output matches actual output, correct state changes, appropriate error messages
@@ -294,78 +328,23 @@ Each test case includes:
   - `should_contain_all=False` (default): At least one expected output must be present
   - `should_contain_all=True`: All expected outputs must be present
 
-### 6.3 Test Coverage Areas
+### 6.3 Test Coverage Breakdown
 
-#### Category A: Initialization & Setup (BBT001-BBT003C) - 6 tests
-- Valid president name initialization
-- Name validation (spaces, empty, numeric, single character)
-- Invalid name reprompting behavior
+The automated test suite implements all test categories defined in Section 2.3, with specific test IDs for traceability:
 
-#### Category B: HIRE Operations (BBT004-BBT013B) - 13 tests
-- Hiring at all organizational levels
-- Capacity enforcement (President: 2, VP: 3, Supervisor: 5)
-- Worker hiring restrictions
-- Duplicate name detection
-- Invalid manager validation
-- Name format validation (numeric, special characters)
-
-#### Category C: FIRE Operations (BBT014-BBT018) - 5 tests
-- Firing employees with and without reports
-- Vacancy creation on fire
-- President protection (cannot be fired)
-- Hierarchy enforcement
-- Non-existent employee handling
-
-#### Category D: QUIT Operations (BBT019-BBT021E) - 8 tests
-- Voluntary departure functionality
-- President quit restriction
-- Subordinate preservation after quit
-- Case sensitivity in names
-- Display behavior after quit
-
-#### Category E: LAYOFF Operations (BBT022-BBT024A) - 4 tests
-- Layoff with no comparable openings
-- Placement in available positions
-- President layoff restriction
-- Subordinate handling during layoff
-
-#### Category F: TRANSFER Operations (BBT025-BBT028) - 4 tests
-- President and VP transfer authorization
-- Cross-hierarchy transfers
-- Supervisor transfer restrictions
-- Capacity validation
-
-#### Category G: PROMOTE Operations (BBT029-BBT034) - 6 tests
-- Single-level promotions (Worker→Supervisor, Supervisor→VP)
-- Multi-level promotion prevention
-- VP promotion limit
-- Vacancy requirement
-- Receiving manager eligibility
-
-#### Category H: DISPLAY Operations (BBT035-BBT037) - 3 tests
-- Complete hierarchy visualization
-- Supervisory vacancy display
-- Worker vacancy handling
-
-#### Category I: Edge Cases & Integration (BBT038-BBT068) - 31 tests
-- Vacancy filling scenarios
-- Complex multi-operation workflows
-- Case sensitivity verification
-- Maximum capacity scenarios
-- Promoted employee capacity changes
-- Transfer and promote combinations
-- Deep hierarchy operations
-
-#### Category J: Bug Detection Tests (BBT069-BBT150) - 82 tests
-Targeted tests for known defect patterns:
-- **Subordinate Visibility:** Tests for subordinates disappearing after manager removal
-- **Promotion Defects:** Unlimited promotions, invalid hierarchy creation, capacity bypass
-- **Name Validation:** Spaces, special characters, case sensitivity, SQL injection
-- **Hierarchy Integrity:** Circular reporting, nested VPs, vacancy propagation
-- **Operation Combinations:** Quit/fire/layoff then rehire, multiple cascading operations
-- **Vacancy Management:** Multiple vacancies, filling specific vacancies, operations under vacancies
-- **Capacity Enforcement:** Promotion exceeding limits, transfer to full positions
-- **Display Issues:** Vacancy display depth, nested vacancies, empty organization
+| Category | Test IDs | Count | Focus Areas |
+|----------|----------|-------|-------------|
+| A: Initialization & Setup | BBT001-BBT003C | 6 | President name validation, initialization edge cases |
+| B: HIRE Operations | BBT004-BBT013B | 13 | Capacity limits, duplicate detection, hierarchy rules |
+| C: FIRE Operations | BBT014-BBT018 | 5 | Vacancy creation, hierarchy enforcement, president protection |
+| D: QUIT Operations | BBT019-BBT021E | 8 | Voluntary departure, subordinate preservation, case sensitivity |
+| E: LAYOFF Operations | BBT022-BBT024A | 4 | Placement algorithm, comparable openings |
+| F: TRANSFER Operations | BBT025-BBT028 | 4 | Authorization, cross-hierarchy moves, capacity validation |
+| G: PROMOTE Operations | BBT029-BBT034 | 6 | Single-level promotion, eligibility, vacancy requirements |
+| H: DISPLAY Operations | BBT035-BBT037 | 3 | Hierarchy visualization, vacancy display rules |
+| I: Edge Cases & Integration | BBT038-BBT068 | 31 | Complex workflows, operation combinations |
+| J: Bug Detection Tests | BBT069-BBT150 | 70 | Known defect patterns, edge cases |
+| **Total** | | **150** | |
 
 ### 6.4 Execution and Reporting
 
@@ -440,28 +419,9 @@ The automated test suite is designed to detect the following defect categories:
    - Capacity limits may be bypassed through specific operation sequences
    - Promotion can create positions exceeding capacity
 
-### 6.6 Test Data Strategy
+### 6.6 Test Data Implementation
 
-#### 6.6.1 Organization Sizes
-- **Minimal:** President only (initialization tests)
-- **Small:** 1-2 VPs with sparse reporting structure
-- **Medium:** Multiple VPs with several supervisors
-- **Full:** All positions at maximum capacity
-- **Deep:** Maximum nesting depth with vacancies
-
-#### 6.6.2 Name Variations
-- Valid alphabetic names (Alice, Bob, President1)
-- Single character (X)
-- All capitals (PRESIDENT)
-- All lowercase (president)
-- Mixed case (AlIcE)
-- Numeric (123, 999)
-- Special characters (@, #, -, _)
-- Spaces (John Smith, leading/trailing spaces)
-- Very long names (100+ characters)
-- Command words (EXIT, HIRE)
-- Escape sequences (\n, \t)
-- SQL injection attempts
+The automated test suite implements the test data strategy defined in Section 2.4, using systematic combinations of organization sizes and name variations to achieve comprehensive coverage.
 
 ### 6.7 Continuous Testing Integration
 
@@ -513,5 +473,21 @@ The automated test suite complements manual testing by:
 - **Coverage Gaps:** Automated tests handle tedious repetitive scenarios
 - **Documentation:** Test cases provide examples for manual test design
 
+---
 
+## 7. SUMMARY
 
+This test plan provides a comprehensive approach to validating the Wacky Widget Organization Management System through both manual and automated testing methods. The combination of systematic test design, automated execution of 150 test cases, and focused manual exploratory testing ensures thorough coverage of functional requirements and edge cases.
+
+**Key Deliverables:**
+- Test plan document (this document)
+- Automated test suite (`run_blackbox_tests.py`) with 150 test cases
+- Test execution results and metrics
+- Bug reports with severity classification
+- Quality assessment report
+
+**Success Criteria:**
+- All critical and high-priority defects identified and documented
+- 90%+ test execution completion
+- Comprehensive coverage of all HR operations
+- Clear assessment of system readiness for deployment

@@ -3,7 +3,7 @@
 **Testing Phase:** Independent Verification  
 **Version / Build:** v1.0  
 **Testers:** Keaton, Tyler, Kayd, Eric  
-**Environment:** Windows PowerShell / Python 3.x CLI  
+**Environment:** Python 3.x CLI  
 
 ## 1. Introduction
 
@@ -165,9 +165,9 @@ These span Display, Name Validation, Hire/Fire/Layoff Operations, Initialization
 - Major: 8
 - Minor: 9
 
-The most serious issues involve loss of subordinate data, display corruption, invalid promotions, and unsafe name validation (including SQL injection acceptance).
+The most serious issues involve loss of subordinate data, display corruption, invalid promotions, and unsafe name validation.
 
-**Critical issues** affect core functionality such as display corruption, subordinate loss, invalid hierarchy formation, and unsafe input handling (including SQL injection).  
+**Critical issues** affect core functionality such as display corruption, subordinate loss, invalid hierarchy formation, and unsafe input handling.  
 **Major issues** include invalid name acceptance, improper handling of hires and layoffs, and display failures under complex structures.  
 **Minor issues** relate to whitespace handling, name formatting, and multi-vacancy display edge cases.
 
