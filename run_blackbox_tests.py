@@ -40,7 +40,7 @@ class BlackBoxTester:
         try:
             # Run the program as a black box
             result = subprocess.run(
-                [sys.executable, "main.py"],
+                [sys.executable, "WackyWidgetOrganization/main.py"],
                 input=all_input,
                 capture_output=True,
                 text=True,
