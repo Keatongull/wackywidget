@@ -33,42 +33,42 @@
 - **Objective:** Verify president can be initialized successfully
 - **Input:** `Alice`, `DISPLAY`, `EXIT`
 - **Expected:** President: Alice
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT002: Reject name with spaces
 - **Objective:** Verify name validation rejects spaces
 - **Input:** `Bob Smith`, `EXIT`
 - **Expected:** Error message about invalid name
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT003: Reject empty name
 - **Objective:** Verify empty names are rejected
 - **Input:** `""`, `Alice`, `EXIT`
 - **Expected:** Eventually accepts "Alice"
-- **Status:** ❌ FAIL
+- **Status:**  FAIL
 - **Priority:** MEDIUM
 
 ### BBT003A: BUG - Numeric names should be rejected
 - **Objective:** Verify numeric-only names are rejected
 - **Input:** `123`, `DISPLAY`, `EXIT`
 - **Expected:** Error: Invalid name
-- **Status:** ❌ FAIL - System accepts numeric names
+- **Status:**  FAIL - System accepts numeric names
 - **Priority:** HIGH
 
 ### BBT003B: Single character names accepted
 - **Objective:** Verify single character name handling
 - **Input:** `X`, `DISPLAY`, `EXIT`
 - **Expected:** President: X
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** LOW
 
 ### BBT003C: BUG - Invalid president name doesn't reprompt
 - **Objective:** Verify program handles multiple invalid inputs
 - **Input:** `""`, `""`, `ValidName`, `EXIT`
 - **Expected:** Eventually accepts ValidName
-- **Status:** ❌ FAIL
+- **Status:**  FAIL
 - **Priority:** MEDIUM
 
 ---
@@ -79,84 +79,84 @@
 - **Objective:** Basic hire operation
 - **Input:** `HIRE President1 VP1`, `DISPLAY`
 - **Expected:** Vice President: VP1, Success message
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT005: President hires two VPs (at capacity)
 - **Objective:** Verify capacity limit (2 VPs max)
 - **Input:** `HIRE President1 VP1`, `HIRE President1 VP2`
 - **Expected:** Both VPs successfully hired
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT006: President cannot hire third VP
 - **Objective:** Verify capacity enforcement
 - **Input:** Attempt to hire 3rd VP
 - **Expected:** Error: maximum direct reports
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT007: VP hires supervisors up to capacity (3)
 - **Objective:** Verify VP capacity limit
 - **Input:** VP hires 3 supervisors
 - **Expected:** All 3 successfully hired
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT008: VP cannot hire 4th supervisor
 - **Objective:** Verify VP capacity enforcement
 - **Input:** VP attempts 4th supervisor
 - **Expected:** Error: maximum direct reports
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT009: Supervisor hires workers up to capacity (5)
 - **Objective:** Verify Supervisor capacity limit
 - **Input:** Supervisor hires 5 workers
 - **Expected:** All 5 successfully hired
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT010: Supervisor cannot hire 6th worker
 - **Objective:** Verify Supervisor capacity enforcement
 - **Input:** Supervisor attempts 6th worker
 - **Expected:** Error: maximum direct reports
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT011: Worker cannot hire anyone
 - **Objective:** Verify workers cannot hire
 - **Input:** `HIRE W1 Intern`
 - **Expected:** Error: worker cannot hire
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT012: Cannot hire duplicate name
 - **Objective:** Verify name uniqueness enforced
 - **Input:** Hire same name twice
 - **Expected:** Error: name already exists
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT013: Cannot hire under non-existent manager
 - **Objective:** Verify manager exists check
 - **Input:** `HIRE GhostManager NewPerson`
 - **Expected:** Error: manager does not exist
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** MEDIUM
 
 ### BBT013A: BUG - Can hire employees with numeric names
 - **Objective:** Verify numeric employee names rejected
 - **Input:** `HIRE President1 999`
 - **Expected:** Error: Invalid name
-- **Status:** ❌ FAIL - System accepts numeric names
+- **Status:**  FAIL - System accepts numeric names
 - **Priority:** HIGH
 
 ### BBT013B: BUG - Can hire employees with special characters
 - **Objective:** Verify special characters rejected
 - **Input:** `HIRE President1 Test@123`
 - **Expected:** Error: Invalid name
-- **Status:** ❌ FAIL - System accepts special characters
+- **Status:**  FAIL - System accepts special characters
 - **Priority:** HIGH
 
 ---
@@ -167,35 +167,35 @@
 - **Objective:** Basic fire operation
 - **Input:** `FIRE President1 VP1`
 - **Expected:** Removed, vacancy created
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT015: Fire employee with reports creates vacancy
 - **Objective:** Verify vacancy creation with subordinates
 - **Input:** Fire VP with supervisor
 - **Expected:** Vacancy shown, supervisor remains
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT016: Cannot fire president
 - **Objective:** Verify president protection
 - **Input:** `FIRE President1 President1`
 - **Expected:** Error: Cannot fire president
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT017: Cannot fire outside hierarchy
 - **Objective:** Verify hierarchy enforcement
 - **Input:** VP2 tries to fire VP1's subordinate
 - **Expected:** Error: not in hierarchy
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT018: Cannot fire non-existent employee
 - **Objective:** Validate employee exists
 - **Input:** `FIRE President1 Ghost`
 - **Expected:** Error: does not exist
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** MEDIUM
 
 ---
@@ -206,56 +206,56 @@
 - **Objective:** Basic quit operation
 - **Input:** `QUIT VP1`
 - **Expected:** Removed, vacancy created
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT020: President cannot quit
 - **Objective:** Verify president cannot quit
 - **Input:** `QUIT President1`
 - **Expected:** Error: President cannot quit
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT021: Cannot quit non-existent employee
 - **Objective:** Validate employee exists
 - **Input:** `QUIT Ghost`
 - **Expected:** Error: does not exist
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** MEDIUM
 
 ### BBT021A: When employee quits, subordinates remain visible
 - **Objective:** Verify subordinate preservation
 - **Input:** VP quits with supervisor and worker
 - **Expected:** Vacancy shown with subordinates
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT021B: Subordinates of quitter still in lookup
 - **Objective:** Verify subordinates accessible after quit
 - **Input:** Quit VP, then fire their subordinate
 - **Expected:** Subordinate found
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** MEDIUM
 
 ### BBT021C: Fire also preserves subordinates in display
 - **Objective:** Verify fire creates proper vacancy
 - **Input:** Fire VP with subordinates
 - **Expected:** Vacancy with subordinates visible
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT021D: BUG - Case insensitive duplicate detection
 - **Objective:** Verify case-insensitive name checking
 - **Input:** Hire "VP1" then "vp1"
 - **Expected:** Error: already exists
-- **Status:** ❌ FAIL - System treats as different names
+- **Status:**  FAIL - System treats as different names
 - **Priority:** MEDIUM
 
 ### BBT021E: BUG - Case sensitive names treated as different
 - **Objective:** Verify case handling in names
 - **Input:** Hire "Bob" then "bob"
 - **Expected:** Error: duplicate
-- **Status:** ❌ FAIL - Both names accepted
+- **Status:**  FAIL - Both names accepted
 - **Priority:** MEDIUM
 
 ---
@@ -266,28 +266,28 @@
 - **Objective:** Verify removal when no positions available
 - **Input:** Layoff VP when president full
 - **Expected:** No openings found, removed
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT023: Layoff worker moves to opening in same group
 - **Objective:** Verify closest placement priority
 - **Input:** Layoff worker with vacancy under same supervisor
 - **Expected:** Worker moved to vacancy
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT024: Cannot layoff president
 - **Objective:** President protection
 - **Input:** `LAYOFF President1 President1`
 - **Expected:** Error: Cannot layoff president
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** MEDIUM
 
 ### BBT024A: Layoff preserves subordinates
 - **Objective:** Verify subordinates remain after layoff
 - **Input:** Layoff supervisor with workers
 - **Expected:** Workers still visible
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ---
@@ -298,28 +298,28 @@
 - **Objective:** Valid cross-hierarchy transfer
 - **Input:** Transfer supervisor from VP1 to VP2
 - **Expected:** Successfully placed
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT026: VP can transfer within own hierarchy
 - **Objective:** VP transferring workers between supervisors
 - **Input:** Transfer worker between supervisors under same VP
 - **Expected:** Successfully placed
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT027: Supervisor cannot transfer
 - **Objective:** Verify only VP/President can transfer
 - **Input:** Supervisor attempts transfer
 - **Expected:** Error: no permission
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT028: Cannot transfer to full position
 - **Objective:** Verify capacity check
 - **Input:** Transfer to manager at capacity
 - **Expected:** Error: maximum direct reports
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ---
@@ -330,42 +330,42 @@
 - **Objective:** Valid one-level promotion
 - **Input:** `PROMOTE VP1 W1`
 - **Expected:** W1 becomes Supervisor
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT030: Promote supervisor to VP (one level)
 - **Objective:** Supervisor to VP promotion
 - **Input:** `PROMOTE President1 S1`
 - **Expected:** S1 becomes VP
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT031: Cannot promote worker to VP (two levels)
 - **Objective:** Verify one-level rule
 - **Input:** `PROMOTE President1 W1`
 - **Expected:** Error: can only be one level
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT032: Cannot promote VP further
 - **Objective:** VP is max level
 - **Input:** `PROMOTE President1 VP1`
 - **Expected:** Error: cannot be promoted further
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT033: Cannot promote without vacancy
 - **Objective:** Verify vacancy requirement
 - **Input:** Promote when receiving manager at capacity
 - **Expected:** Error: maximum direct reports
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT034: Worker/Supervisor cannot be receiving manager
 - **Objective:** Verify only VP/President can receive promotions
 - **Input:** `PROMOTE S1 W1`
 - **Expected:** Error: cannot promote
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** MEDIUM
 
 ### BBT035-BBT044: Additional promotion edge cases
@@ -380,31 +380,31 @@
 ### BBT045: President name with spaces rejected
 - **Input:** `John Smith`
 - **Expected:** Error: Invalid
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** HIGH
 
 ### BBT047: Multi-word names parsed incorrectly
 - **Input:** `HIRE President1 Carol Davis`
 - **Expected:** Fails or handles space
-- **Status:** ✅ PASS
+- **Status:**  PASS
 - **Priority:** MEDIUM
 
 ### BBT048: Names with leading/trailing spaces
 - **Input:** `HIRE President1  SpaceName `
 - **Expected:** Error: Invalid
-- **Status:** ❌ FAIL
+- **Status:**  FAIL
 - **Priority:** MEDIUM
 
 ### BBT081-BBT089: Extended name validation
-- **BBT081:** Only spaces - ❌ FAIL
-- **BBT082:** Tabs - ✅ PASS
-- **BBT083:** Newlines - ❌ FAIL
+- **BBT081:** Only spaces -  FAIL
+- **BBT082:** Tabs -  PASS
+- **BBT083:** Newlines -  FAIL
 - **BBT084:** Removed (duplicate)
-- **BBT085:** Underscores - ❌ FAIL
-- **BBT086:** Hyphens - ❌ FAIL
-- **BBT087:** Very long name (100+ chars) - ✅ PASS
-- **BBT088:** Single character - ✅ PASS
-- **BBT089:** Command word as name - ✅ PASS
+- **BBT085:** Underscores -  FAIL
+- **BBT086:** Hyphens -  FAIL
+- **BBT087:** Very long name (100+ chars) -  PASS
+- **BBT088:** Single character -  PASS
+- **BBT089:** Command word as name -  PASS
 
 ---
 
@@ -414,27 +414,27 @@
 - **Objective:** Subordinates remain visible after VP removal
 - **Input:** Fire VP with supervisors and workers
 - **Expected:** All subordinates visible under vacancy
-- **Status:** ❌ FAIL - Subordinates disappear
+- **Status:**  FAIL - Subordinates disappear
 - **Priority:** CRITICAL
 
 ### BBT054: Display hierarchy when VP quits
 - **Objective:** Subordinates visible after quit
 - **Input:** VP quits with subordinates
 - **Expected:** Vacancy with subordinates
-- **Status:** ❌ FAIL - Subordinates disappear
+- **Status:**  FAIL - Subordinates disappear
 - **Priority:** CRITICAL
 
 ### BBT055: Display when Supervisor fired
 - **Objective:** Workers remain visible
 - **Input:** Fire supervisor with workers
 - **Expected:** Vacancy with workers
-- **Status:** ❌ FAIL - Workers disappear
+- **Status:**  FAIL - Workers disappear
 - **Priority:** CRITICAL
 
 ### BBT056-BBT058: Additional display tests
-- **BBT056:** Supervisor quits - ✅ PASS
-- **BBT057:** Layoff VP - ❌ FAIL
-- **BBT058:** Deep hierarchy - ❌ FAIL
+- **BBT056:** Supervisor quits -  PASS
+- **BBT057:** Layoff VP -  FAIL
+- **BBT058:** Deep hierarchy -  FAIL
 
 ---
 
@@ -454,18 +454,18 @@
 
 ### Highlights:
 
-**BBT091:** Subordinates lost after cascading fires - ❌ FAIL  
-**BBT099:** Layoff with subordinates - ❌ FAIL  
-**BBT116:** Display stops at vacancy - ❌ FAIL  
-**BBT119:** Deep hierarchy with vacancy - ❌ FAIL  
-**BBT130:** Layoff under vacancy - ❌ FAIL  
-**BBT132:** Multiple vacancies - ❌ FAIL  
-**BBT133:** SQL injection attempt - ❌ FAIL  
-**BBT134:** Escape sequences - ❌ FAIL  
-**BBT147:** Hire after quit preserves structure - ❌ FAIL  
-**BBT150:** Maximum nesting - ❌ FAIL  
+**BBT091:** Subordinates lost after cascading fires -  FAIL  
+**BBT099:** Layoff with subordinates -  FAIL  
+**BBT116:** Display stops at vacancy -  FAIL  
+**BBT119:** Deep hierarchy with vacancy -  FAIL  
+**BBT130:** Layoff under vacancy -  FAIL  
+**BBT132:** Multiple vacancies -  FAIL  
+**BBT133:** SQL injection attempt -  FAIL  
+**BBT134:** Escape sequences -  FAIL  
+**BBT147:** Hire after quit preserves structure -  FAIL  
+**BBT150:** Maximum nesting -  FAIL  
 
-**Remaining tests (BBT090-BBT149):** Mostly ✅ PASS
+**Remaining tests (BBT090-BBT149):** Mostly  PASS
 
 ---
 
@@ -507,10 +507,13 @@
 
 ---
 
-**Last Updated:** November 18, 2025  
+**Last Updated:** November 20, 2025  
 **Test Framework:** run_blackbox_tests.py  
 **Testing Method:** Black Box CLI Interface Testing
 
+---
+
+## DETAILED TEST CASE SPECIFICATIONS
 
 ### TC001: Initialize President with Valid Name
 - **Objective:** Verify president can be initialized successfully
